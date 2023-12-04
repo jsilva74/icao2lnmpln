@@ -1,0 +1,46 @@
+{
+  "name": "icao2lnmpln",
+  "description": "ICAO codes to Little Navmap plan",
+  "version": "1.0.0",
+  "author": {
+    "name": "José Silva Jr. <b0Z0>",
+    "email": "josesilvajunior@gmail.com"
+  },
+  "repository": {
+    "url": "https://github.com/jsilva74/icao2lnmpln"
+  },
+  "readme": "https://github.com/jsilva74/icao2lnmpln#readme",
+  "bugs": {
+    "url": "https://github.com/jsilva74/icao2lnmpln/issues"
+  },
+  "homepage": "https://jsilva74.github.io/icao2lnmpln",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "rm -rf ./build && vite build && mv ./dist ./build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  },
+  "dependencies": {
+    "client-zip": "^2.4.4",
+    "gh-pages": "^6.1.0",
+    "lodash": "^4.17.21",
+    "luxon": "^3.4.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^8.53.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "vite": "^5.0.0"
+  }
+}
