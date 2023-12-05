@@ -8,9 +8,13 @@
 #### Utility to convert a list of ICAO codes (from FSEconomy world only) to Little Nav Map flight plan.
 
 ### ICAO codes not recognized by LNM
-FSEconomy database is a snapshot of FS9 database, so, many of those airports even don't exist anymore or, in best scenario, has their ICAO codes changed.
+FSEconomy database is a snapshot of FS9 database, so, many of those airports even don't exist anymore or, in the best scenario, has their ICAO codes changed.
 
-When these ICAO codes are imported to LNM, LNM will not be able to address them. In this case, you can replace the missing airport by an userpoint (<a href="https://drive.google.com/file/d/13xM0BSt6qVSF7qeE-nDDy0GkXiItpKpn/view?usp=share_link" target="_blank">Here</a> you'll find all FSE airports as LNM userpoint to import in LNM and use them as replacement for any missing airport).
+The app tries to identify a missed airport by:
+1. Locating a new ICAO code for the airport _**based on user's simulator choice**_ and using it in the LNM plan (in this case, a remark will be added with the FSE ICAO code)
+2. Creating a userpoint*
+
+* this case can prevent LNM terrain profile to work. We've get in touch with Alex (LNM developer) and he'll try to solve it.
 
 <hr/>
 
@@ -19,6 +23,7 @@ When these ICAO codes are imported to LNM, LNM will not be able to address them.
 1. Clone this repo
 2. <code>npm install</code> or <code>yarn install</code> or <code>pnpm install</code>
 3. <code>npm run dev</code> or <code>yarn run dev</code> or <code>pnpm run dev</code>
+4. Enjoy!
 
 <hr/>
 
