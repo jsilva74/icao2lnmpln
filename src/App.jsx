@@ -13,18 +13,18 @@ const flightPlan = `<?xml version="1.0" encoding="UTF-8"?>
 <LittleNavmap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.littlenavmap.org/schema/lnmpln.xsd">
   <Flightplan>
     <Header>
-      <FlightplanType>VFR</FlightplanType>
-      <CruisingAlt>1000</CruisingAlt>
-      <CruisingAltF>1000.00000000</CruisingAltF>
+      <FlightplanType>{{RULE}}</FlightplanType>
+      <CruisingAlt>{{ALT}}</CruisingAlt>
+      <CruisingAltF>{{ALT}}.00000000</CruisingAltF>
       <CreationDate>{{DATE}}</CreationDate>
-      <FileVersion>1.2</FileVersion>
-      <ProgramName>Little Navmap</ProgramName>
-      <ProgramVersion>2.8.12</ProgramVersion>
-      <Documentation>https://www.littlenavmap.org/lnmpln.html</Documentation>
+      <FileVersion>1.0</FileVersion>
+      <ProgramName>icao2lnmpln</ProgramName>
+      <ProgramVersion>{{VERSION}}</ProgramVersion>
+      <Documentation>https://github.com/jsilva74/icao2lnmpln#readme</Documentation>
     </Header>
     <AircraftPerformance>
-      <Type>C172</Type>
-      <Name>Performance Profile Example</Name>
+      <Type>{{ACFT_TYPE}}</Type>
+      <Name>{{ACFT_TYPE}} Performance Normal Operation</Name>
     </AircraftPerformance>
     <Waypoints>{{WAYPOINTS}}
     </Waypoints>
@@ -47,16 +47,27 @@ const fillTemplate = (template, variables) => {
 const sims = {
   fsx: 'FSX',
   msfs: 'MSFS',
-  xplane11: 'X-Plane 11',
-  // xplane12: 'X-Plane 12',
+  xplane11: 'XP11',
+  // xplane12: 'XP12',
 }
+const flightRules = ['VFR', 'IFR']
 const App = () => {
   const icaosRef = useRef()
   const [icaos, setIcaos] = useState('')
   const [generating, setGenerating] = useState(false)
   const sim = useApphStore((state) => state.sim)
+  const aircraft = useApphStore((state) => state.aircraft)
+  const altitude = useApphStore((state) => state.altitude)
+  const rules = useApphStore((state) => state.rules)
   const recent = useApphStore((state) => state.recent)
   const updateSim = useApphStore((state) => (data) => state.updateSim(data))
+  const updateAircraft = useApphStore(
+    (state) => (data) => state.updateAircraft(data),
+  )
+  const updateAltitude = useApphStore(
+    (state) => (data) => state.updateAltitude(data),
+  )
+  const updateRules = useApphStore((state) => (data) => state.updateRules(data))
   const updateRecent = useApphStore(
     (state) => (data) => state.updateRecent(data),
   )
@@ -121,8 +132,12 @@ const App = () => {
           )
           .join('')
         const template = fillTemplate(flightPlan, [
+          ['RULE', rules],
+          ['ALT', altitude],
           ['DATE', new Date().toISOString()],
+          ['ACFT_TYPE', aircraft],
           ['WAYPOINTS', waypoints],
+          ['VERSION', version],
         ])
         const blob = new Blob([template], { type: 'text/xml' })
         files.push({
@@ -173,13 +188,53 @@ const App = () => {
               {Object.keys(sims).map((key) => (
                 <div key={key}>
                   <input
-                    type="checkbox"
+                    type="radio"
                     checked={sim === key}
                     onChange={(ev) => updateSim(key)}
                   />
                   <label>{sims[key]}</label>
                 </div>
               ))}
+            </div>
+            <div className="row">
+              <div>
+                <input
+                  type="text"
+                  value={aircraft}
+                  onChange={(ev) =>
+                    updateAircraft(ev.target.value?.toUpperCase() || 'C172')
+                  }
+                  placeholder="Aircraft ICAO type code"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={altitude}
+                  onChange={(ev) =>
+                    updateAltitude(
+                      ev.target.value?.replace(/[^0-9]/g, '') || 1000,
+                    )
+                  }
+                  placeholder="Cruising altitude in FT"
+                  style={{ textAlign: 'right' }}
+                />
+              </div>
+            </div>
+            <div className="row">
+              <div style={{ display: 'inline-flex' }}>
+                Flight Rules:
+                {flightRules.map((rule) => (
+                  <div key={rule}>
+                    <input
+                      type="radio"
+                      checked={rules === rule}
+                      onChange={(ev) => updateRules(rule)}
+                    />
+                    <label>{rule}</label>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="row">
               <div className="textarea">
@@ -197,7 +252,9 @@ const App = () => {
                 <button
                   type="button"
                   onClick={run}
-                  disabled={icaos.trim().length < 7 || generating}
+                  disabled={
+                    !sim || !rules || icaos.trim().length < 7 || generating
+                  }
                 >
                   Generate LNM plan
                 </button>

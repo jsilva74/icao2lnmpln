@@ -31,7 +31,7 @@ footer {
 .form {
   display: inline-flex;
   column-gap: 20px;
-  width: 600px;
+  width: 640px;
   height: 320px;
   margin: auto;
 }
@@ -40,6 +40,11 @@ footer {
   display: inline-flex;
   column-gap: 20px;
   width: 100%;
+  margin: 4px 0;
+
+  & input[type="text"] {
+    width: 100%;
+  }
 }
 
 .textarea {

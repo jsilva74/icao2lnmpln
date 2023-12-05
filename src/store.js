@@ -5,9 +5,15 @@ import { persist } from 'zustand/middleware'
 const useApphStore = create()(
   persist(
     (set) => ({
-      sim: 'MSFS',
+      sim: 'msfs',
+      aircraft: 'C172',
+      rules: 'VFR',
+      altitude: 1000,
       recent: [],
       updateSim: (data) => set((state) => ({ ...state, sim: data })),
+      updateAircraft: (data) => set((state) => ({ ...state, aircraft: data })),
+      updateRules: (data) => set((state) => ({ ...state, rules: data })),
+      updateAltitude: (data) => set((state) => ({ ...state, altitude: data })),
       updateRecent: (data) =>
         set((state) => ({
           ...state,
