@@ -197,6 +197,25 @@ const App = () => {
               ))}
             </div>
             <div className="row">
+              Plan:
+              <div
+                style={{
+                  display: 'inline-flex',
+                  columnGap: 20,
+                  marginLeft: 33,
+                }}
+              >
+                {flightRules.map((rule) => (
+                  <div key={rule}>
+                    <input
+                      type="radio"
+                      checked={rules === rule}
+                      onChange={(ev) => updateRules(rule)}
+                    />
+                    <label>{rule}</label>
+                  </div>
+                ))}
+              </div>
               <div>
                 <input
                   type="text"
@@ -204,7 +223,9 @@ const App = () => {
                   onChange={(ev) =>
                     updateAircraft(ev.target.value?.toUpperCase() || 'C172')
                   }
-                  placeholder="Aircraft ICAO type code"
+                  title="Aircraft type"
+                  placeholder="Aircraft type"
+                  style={{ width: 60 }}
                 />
               </div>
               <div>
@@ -216,24 +237,10 @@ const App = () => {
                       ev.target.value?.replace(/[^0-9]/g, '') || 1000,
                     )
                   }
-                  placeholder="Cruising altitude in FT"
-                  style={{ textAlign: 'right' }}
+                  title="Cruising altitude (in ft)"
+                  placeholder="Cruising altitude (in ft)"
+                  style={{ textAlign: 'right', width: 40 }}
                 />
-              </div>
-            </div>
-            <div className="row">
-              <div style={{ display: 'inline-flex' }}>
-                Flight Rules:
-                {flightRules.map((rule) => (
-                  <div key={rule}>
-                    <input
-                      type="radio"
-                      checked={rules === rule}
-                      onChange={(ev) => updateRules(rule)}
-                    />
-                    <label>{rule}</label>
-                  </div>
-                ))}
               </div>
             </div>
             <div className="row">
@@ -256,7 +263,7 @@ const App = () => {
                     !sim || !rules || icaos.trim().length < 7 || generating
                   }
                 >
-                  Generate LNM plan
+                  Generate plan to LNM
                 </button>
                 <button
                   type="button"
@@ -273,7 +280,7 @@ const App = () => {
           </form>
         </div>
         <div className="recent">
-          <h3>Recent Generated</h3>
+          <h3>Recent Routes</h3>
           <ol>
             {orderBy(recent, ['time'], ['desc']).map(({ id, icaos }) => (
               <li
