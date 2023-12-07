@@ -94,6 +94,7 @@ const App = () => {
       const files = []
       const [first] = array
       const [last] = array.slice().reverse()
+      const distances = []
       const comment = array
         .map((icao, index) => {
           const toIcao = array[index + 1]
@@ -102,17 +103,19 @@ const App = () => {
           const from = airports[icao]
           const [fromAlias] = from[sim]
           const [toAlias] = to[sim]
-          return `Leg ${index + 1} (${Math.round(
+          const nm = Math.round(
             distance(
               point([from.longitude, from.latitude]),
               point([to.longitude, to.latitude]),
               { units: 'nauticalmiles' },
             ),
-          )}NM): ${!!fromAlias && icao !== fromAlias ? `(${icao}) ` : ''}${
-            icao === fromAlias ? icao : fromAlias || icao
-          } -> ${toIcao === toAlias ? toIcao : toAlias || toIcao}${
-            !!toAlias && toIcao !== toAlias ? ` (${toIcao})` : ''
-          }`
+          )
+          distances.push(nm)
+          return `Leg ${index + 1}: ${
+            !!fromAlias && icao !== fromAlias ? `(${icao}) ` : ''
+          }${icao === fromAlias ? icao : fromAlias || icao} -> ${
+            toIcao === toAlias ? toIcao : toAlias || toIcao
+          }${!!toAlias && toIcao !== toAlias ? ` (${toIcao})` : ''} [${nm}NM]`
         })
         .filter((c) => c)
         .join('\n')
@@ -162,7 +165,14 @@ const App = () => {
           ['ACFT_TYPE', aircraft],
           ['WAYPOINTS', waypoints],
           ['VERSION', version],
-          ['COMMENT', `Route Summary:\n${comment}`],
+          [
+            'COMMENT',
+            `Route Summary:\n${comment}\nTotal distance: ${Intl.NumberFormat(
+              'en-US',
+            ).format(
+              distances.reduce((total, distance) => total + distance, 0),
+            )}NM`,
+          ],
         ])
         const blob = new Blob([template], { type: 'text/xml' })
         files.push({
