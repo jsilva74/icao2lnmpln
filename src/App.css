@@ -36,6 +36,10 @@ footer {
   margin: auto;
 }
 
+label {
+  user-select: none;
+}
+
 .row {
   display: inline-flex;
   column-gap: 20px;
@@ -91,6 +95,10 @@ button:disabled {
       text-overflow: ellipsis;
       cursor: pointer;
       user-select: none;
+    }
+
+    & span.delete {
+      margin-right: 8px;
     }
   }
 }

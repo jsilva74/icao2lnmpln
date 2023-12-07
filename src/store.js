@@ -2,7 +2,7 @@ import { orderBy, take } from 'lodash'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-const useApphStore = create()(
+const useAppStore = create()(
   persist(
     (set) => ({
       sim: 'msfs',
@@ -31,4 +31,4 @@ const useApphStore = create()(
   ),
 )
 
-export default useApphStore
+export default useAppStore

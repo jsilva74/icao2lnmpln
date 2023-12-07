@@ -3,11 +3,12 @@ import { useRef, useState } from 'react'
 import { orderBy } from 'lodash'
 import airports from './assets/airports.json'
 import './App.css'
-import useApphStore from './store'
+import useAppStore from './store'
 import { v4 as UuidV4 } from 'uuid'
 import logo from './assets/logo.png'
 import { downloadZip } from 'client-zip'
 import { version } from '../package.json'
+import { point, distance } from '@turf/turf'
 
 const flightPlan = `<?xml version="1.0" encoding="UTF-8"?>
 <LittleNavmap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.littlenavmap.org/schema/lnmpln.xsd">
@@ -21,6 +22,7 @@ const flightPlan = `<?xml version="1.0" encoding="UTF-8"?>
       <ProgramName>icao2lnmpln</ProgramName>
       <ProgramVersion>{{VERSION}}</ProgramVersion>
       <Documentation>https://github.com/jsilva74/icao2lnmpln#readme</Documentation>
+      <Comment>{{COMMENT}}</Comment>
     </Header>
     <AircraftPerformance>
       <Type>{{ACFT_TYPE}}</Type>
@@ -55,23 +57,23 @@ const App = () => {
   const icaosRef = useRef()
   const [icaos, setIcaos] = useState('')
   const [generating, setGenerating] = useState(false)
-  const sim = useApphStore((state) => state.sim)
-  const aircraft = useApphStore((state) => state.aircraft)
-  const altitude = useApphStore((state) => state.altitude)
-  const rules = useApphStore((state) => state.rules)
-  const recent = useApphStore((state) => state.recent)
-  const updateSim = useApphStore((state) => (data) => state.updateSim(data))
-  const updateAircraft = useApphStore(
+  const sim = useAppStore((state) => state.sim)
+  const aircraft = useAppStore((state) => state.aircraft)
+  const altitude = useAppStore((state) => state.altitude)
+  const rules = useAppStore((state) => state.rules)
+  const recent = useAppStore((state) => state.recent)
+  const updateSim = useAppStore((state) => (data) => state.updateSim(data))
+  const updateAircraft = useAppStore(
     (state) => (data) => state.updateAircraft(data),
   )
-  const updateAltitude = useApphStore(
+  const updateAltitude = useAppStore(
     (state) => (data) => state.updateAltitude(data),
   )
-  const updateRules = useApphStore((state) => (data) => state.updateRules(data))
-  const updateRecent = useApphStore(
+  const updateRules = useAppStore((state) => (data) => state.updateRules(data))
+  const updateRecent = useAppStore(
     (state) => (data) => state.updateRecent(data),
   )
-  const removeRecent = useApphStore(
+  const removeRecent = useAppStore(
     (state) => (data) => state.removeRecent(data),
   )
 
@@ -92,6 +94,28 @@ const App = () => {
       const files = []
       const [first] = array
       const [last] = array.slice().reverse()
+      const comment = array
+        .map((icao, index) => {
+          const toIcao = array[index + 1]
+          if (!toIcao) return
+          const to = airports[toIcao]
+          const from = airports[icao]
+          const [fromAlias] = from[sim]
+          const [toAlias] = to[sim]
+          return `Leg ${index + 1} (${Math.round(
+            distance(
+              point([from.longitude, from.latitude]),
+              point([to.longitude, to.latitude]),
+              { units: 'nauticalmiles' },
+            ),
+          )}NM): ${!!fromAlias && icao !== fromAlias ? `(${icao}) ` : ''}${
+            icao === fromAlias ? icao : fromAlias || icao
+          } -> ${toIcao === toAlias ? toIcao : toAlias || toIcao}${
+            !!toAlias && toIcao !== toAlias ? ` (${toIcao})` : ''
+          }`
+        })
+        .filter((c) => c)
+        .join('\n')
       const selected = array.map((icao, index) => {
         const airport = airports[icao]
         const [alias] = airport[sim]
@@ -138,6 +162,7 @@ const App = () => {
           ['ACFT_TYPE', aircraft],
           ['WAYPOINTS', waypoints],
           ['VERSION', version],
+          ['COMMENT', `Route Summary:\n${comment}`],
         ])
         const blob = new Blob([template], { type: 'text/xml' })
         files.push({
@@ -156,11 +181,14 @@ const App = () => {
       link.click()
       document.body.removeChild(link)
       alert(`Plan was exported to your Downloads folder`)
-      updateRecent({
-        id: UuidV4(),
-        icaos: icaos.replace(/\s\s+/g, ' ').replace(/[^A-Z0-9]/g, ' '),
-        time: DateTime.now().valueOf(),
-      })
+      const x = icaos.replace(/\s\s+/g, ' ').replace(/[^A-Z0-9]/g, ' ')
+      if (!recent.find(({ icaos }) => icaos === x)) {
+        updateRecent({
+          id: UuidV4(),
+          icaos: icaos.replace(/\s\s+/g, ' ').replace(/[^A-Z0-9]/g, ' '),
+          time: DateTime.now().valueOf(),
+        })
+      }
       setIcaos('')
     } catch (error) {
       console.log(error)
@@ -283,13 +311,11 @@ const App = () => {
           <h3>Recent Routes</h3>
           <ol>
             {orderBy(recent, ['time'], ['desc']).map(({ id, icaos }) => (
-              <li
-                key={id}
-                onClick={() => setIcaos(icaos)}
-                onDoubleClick={() => removeRecent([id])}
-                title={icaos}
-              >
-                {icaos}
+              <li key={id} title={icaos}>
+                <span className="delete" onClick={() => removeRecent([id])}>
+                  [x]
+                </span>
+                <span onClick={() => setIcaos(icaos)}>{icaos}</span>
               </li>
             ))}
           </ol>
