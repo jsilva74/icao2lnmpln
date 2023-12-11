@@ -104,11 +104,9 @@ const App = () => {
           const [fromAlias] = from[sim]
           const [toAlias] = to[sim]
           const nm = Math.round(
-            distance(
-              point([from.longitude, from.latitude]),
-              point([to.longitude, to.latitude]),
-              { units: 'nauticalmiles' },
-            ),
+            distance(point([from.lon, from.lat]), point([to.lon, to.lat]), {
+              units: 'nauticalmiles',
+            }),
           )
           distances.push(nm)
           return `Leg ${index + 1}: ${
@@ -134,8 +132,8 @@ const App = () => {
           icao: icao === alias ? icao : alias || icao,
           name: airport.name,
           type,
-          longitude: airport.longitude,
-          latitude: airport.latitude,
+          longitude: airport.lon,
+          latitude: airport.lat,
           elevation: airport.elevation,
           comment,
         }
