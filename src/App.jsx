@@ -130,7 +130,7 @@ const App = () => {
         return {
           leg: index,
           icao: icao === alias ? icao : alias || icao,
-          name: airport.name,
+          name: airport.name.replace(/[^A-Za-z]/g, ' '),
           type,
           longitude: airport.lon,
           latitude: airport.lat,
