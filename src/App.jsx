@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { useRef, useState } from 'react'
-import { orderBy } from 'lodash'
+import { orderBy, uniq } from 'lodash'
 import airports from './assets/airports.json'
 import './App.css'
 import useAppStore from './store'
@@ -83,7 +83,13 @@ const App = () => {
         .replace(/[^A-Z0-9]/g, ' ')
         .split(' ')
         .filter((v) => v)
-      const invalid = array.filter((icao) => !airports[icao])
+      const invalid = array.filter(
+        (icao) =>
+          !airports[icao] &&
+          !Object.keys(airports).find((key) =>
+            airports[key][sim].includes(icao),
+          ),
+      )
       if (invalid.length) {
         const error = `ICAO codes not found in FSEconomy world:\n${invalid
           .sort()
@@ -92,12 +98,22 @@ const App = () => {
         throw new Error(error)
       }
       const files = []
-      const [first] = array
-      const [last] = array.slice().reverse()
+      const fse = uniq([
+        ...array.filter((icao) => icao in airports),
+        ...array
+          .filter((icao) => !(icao in airports))
+          .map((icao) => {
+            return Object.keys(airports).find((key) =>
+              airports[key][sim].includes(icao),
+            )
+          }),
+      ])
+      const [first] = fse
+      const [last] = fse.slice().reverse()
       const distances = []
-      const comment = array
+      const comment = fse
         .map((icao, index) => {
-          const toIcao = array[index + 1]
+          const toIcao = fse[index + 1]
           if (!toIcao) return
           const to = airports[toIcao]
           const from = airports[icao]
@@ -117,7 +133,7 @@ const App = () => {
         })
         .filter((c) => c)
         .join('\n')
-      const selected = array.map((icao, index) => {
+      const selected = fse.map((icao, index) => {
         const airport = airports[icao]
         const [alias] = airport[sim]
         const type = !!alias ? 'AIRPORT' : 'USERPOINT'
@@ -285,7 +301,7 @@ const App = () => {
                   ref={icaosRef}
                   value={icaos || ''}
                   onChange={(ev) => setIcaos(ev.target.value?.toUpperCase())}
-                  placeholder="Type or paste the ICAO codes (existent in FSEconomy world) here separated by comma, semi-comma, space or whatever"
+                  placeholder="Type or paste the ICAO codes (or their aliases according the simulator in use) existent in FSEconomy world here separated by comma, semi-comma, space or whatever"
                   autoFocus
                 />
               </div>
