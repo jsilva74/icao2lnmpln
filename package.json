@@ -1,7 +1,7 @@
 {
   "name": "icao2lnmpln",
   "description": "ICAO codes to Little Navmap plan",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "author": {
     "name": "José Silva Jr. <b0Z0>",
     "email": "josesilvajunior@gmail.com"
@@ -31,6 +31,7 @@
     "luxon": "^3.4.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-select": "^5.8.0",
     "uuid": "^9.0.1",
     "zustand": "^4.4.7"
   },
