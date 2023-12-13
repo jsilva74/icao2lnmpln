@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { orderBy, uniq } from 'lodash'
+import CreatableSelect from 'react-select/creatable'
 import airports from './assets/airports.json'
 import './App.css'
 import useAppStore from './store'
@@ -9,6 +10,7 @@ import logo from './assets/logo.png'
 import { downloadZip } from 'client-zip'
 import { version } from '../package.json'
 import { point, distance } from '@turf/turf'
+import Creatable from 'react-select/creatable'
 
 const flightPlan = `<?xml version="1.0" encoding="UTF-8"?>
 <LittleNavmap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.littlenavmap.org/schema/lnmpln.xsd">
@@ -55,16 +57,24 @@ const sims = {
 const flightRules = ['VFR', 'IFR']
 const App = () => {
   const icaosRef = useRef()
+  const [selectedAircraft, setSelectedAircraft] = useState({
+    value: '',
+    label: '',
+  })
   const [icaos, setIcaos] = useState('')
   const [generating, setGenerating] = useState(false)
   const sim = useAppStore((state) => state.sim)
   const aircraft = useAppStore((state) => state.aircraft)
+  const aircraftList = useAppStore((state) => state.aircraftList)
   const altitude = useAppStore((state) => state.altitude)
   const rules = useAppStore((state) => state.rules)
   const recent = useAppStore((state) => state.recent)
   const updateSim = useAppStore((state) => (data) => state.updateSim(data))
   const updateAircraft = useAppStore(
     (state) => (data) => state.updateAircraft(data),
+  )
+  const updateAircraftList = useAppStore(
+    (state) => (data) => state.updateAircraftList(data),
   )
   const updateAltitude = useAppStore(
     (state) => (data) => state.updateAltitude(data),
@@ -176,7 +186,7 @@ const App = () => {
           ['RULE', rules],
           ['ALT', altitude],
           ['DATE', new Date().toISOString()],
-          ['ACFT_TYPE', aircraft],
+          ['ACFT_TYPE', selectedAircraft],
           ['WAYPOINTS', waypoints],
           ['VERSION', version],
           [
@@ -222,6 +232,10 @@ const App = () => {
     }
   }
 
+  useEffect(() => {
+    setSelectedAircraft({ value: aircraft, label: aircraft })
+  }, [aircraft])
+
   return (
     <div className="container">
       <header>
@@ -249,12 +263,11 @@ const App = () => {
               ))}
             </div>
             <div className="row">
-              Plan:
+              Flight rules:
               <div
                 style={{
                   display: 'inline-flex',
                   columnGap: 20,
-                  marginLeft: 33,
                 }}
               >
                 {flightRules.map((rule) => (
@@ -268,18 +281,32 @@ const App = () => {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="row">
+              <div>Aircraft type:</div>
               <div>
-                <input
-                  type="text"
-                  value={aircraft}
-                  onChange={(ev) =>
-                    updateAircraft(ev.target.value?.toUpperCase() || 'C172')
-                  }
-                  title="Aircraft type"
-                  placeholder="Aircraft type"
-                  style={{ width: 60 }}
+                <CreatableSelect
+                  isSearchable
+                  isClearable
+                  escapeClearsValue
+                  options={aircraftList.sort().map((acft) => ({
+                    value: acft,
+                    label: acft,
+                  }))}
+                  value={selectedAircraft}
+                  onChange={({ value }) => updateAircraft(value?.toUpperCase())}
+                  onCreateOption={(value) => {
+                    if (!!value) updateAircraftList(value?.toUpperCase())
+                    updateAircraft(value?.toUpperCase())
+                  }}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  placeholder="Select or type to create a new"
                 />
               </div>
+            </div>
+            <div className="row">
+              <div>Cruising Altitude (in ft):</div>
               <div>
                 <input
                   type="text"
@@ -312,7 +339,11 @@ const App = () => {
                   type="button"
                   onClick={run}
                   disabled={
-                    !sim || !rules || icaos.trim().length < 7 || generating
+                    !sim ||
+                    !selectedAircraft ||
+                    !rules ||
+                    icaos.trim().length < 7 ||
+                    generating
                   }
                 >
                   Generate plan to LNM

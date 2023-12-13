@@ -18,22 +18,18 @@ footer {
   justify-content: center;
   bottom: 8px;
   font-size: 12px;
-  width: 100%;
+  width: 98%;
 }
 
 .container {
   display: flex;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+  justify-content: flex-start;
+  margin: 80px 24px;
 }
 
 .form {
   display: inline-flex;
   column-gap: 20px;
-  width: 640px;
-  height: 320px;
-  margin: auto;
 }
 
 label {
@@ -42,6 +38,7 @@ label {
 
 .row {
   display: inline-flex;
+  align-items: center;
   column-gap: 20px;
   width: 100%;
   margin: 4px 0;
@@ -51,15 +48,19 @@ label {
   }
 }
 
+.react-select-container {
+  width: 280px !important;
+}
+
 .textarea {
-  width: 100%;
+  width: 500px;
 
   & textarea {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 100%;
-    height: 200px;
+    height: 80px;
     font-family: Arial, serif;
   }
 }
@@ -70,7 +71,7 @@ button:disabled {
 
 .recent {
   width: 240px;
-  height: 320px;
+  height: 100%;
 
   & h3 {
     width: 240px;
